@@ -79,7 +79,7 @@ function addObject(collection, object){
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
-  myDb.doIt();
+  // myDb.doIt();
   getWeather(encodeURIComponent("Hausen am Albis, CH"), res);
 });
 
