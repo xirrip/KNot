@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('KNot:server');
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 
 /**
  * Get port from environment and store in Express.
@@ -29,8 +31,12 @@ app.set('port', server_port);
 /**
  * Create HTTP server.
  */
-
-var server = http.createServer(app);
+var options = {
+  key: fs.readFileSync('bin/keys/8a666612-24fe-4e19-8a83-7aa9745aeac0.private.pem'),
+  cert: fs.readFileSync('bin/keys/8a666612-24fe-4e19-8a83-7aa9745aeac0.public.pem')
+};
+// var server = http.createServer(app);
+var server = https.createServer(options, app);
 
 /**
  * Listen on provided port, on all network interfaces.

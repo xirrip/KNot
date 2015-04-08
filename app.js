@@ -1,24 +1,6 @@
 
-/*
 var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-
-var routes = require('./routes/index.js');
-var users = require('./routes/user.js');
-
-var app = express();
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.listen(3000);
-
-app.get('/', routes);
-app.get('/user/:userid', users);
-*/
-
-var express = require('express');
+var session = require('express-session');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -29,6 +11,9 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var user = require('./routes/user');
 var itemgroups = require('./routes/itemgroups');
+var regions = require('./routes/regions');
+
+var eve_sse_login = require('./routes/eve_sse_login');
 
 var app = express();
 
@@ -42,17 +27,22 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session( { secret : 'VeryPrivateIndeed' } ));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.route('/user/:userid').get(user);
+// app.route('/user/:userid').get(user);
+app.route('/user').get(user);
+
 app.route('/eve/login').get(function(req, res){
-  res.redirect('https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://3rdpartysite.com/callback&client_id=3rdpartyClientId&scope=&state=uniquestate123&_ga=1.197862447.1481297659.1385641799')
+  res.redirect('https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://localhost:3000/skunkonline/login/sse&client_id=d43424f9f0574f178654d9e4ab008576&scope=publicData&state=uniquestate123')
 });
+app.route('/skunkonline/login/sse').get(eve_sse_login)
 
 // app.route('/users').get(users);
 app.use('/', routes);
 app.use('/users', users);
 app.use('/itemGroups', itemgroups);
+app.use('/regions', regions);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
