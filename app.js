@@ -8,10 +8,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var user = require('./routes/user');
 var itemgroups = require('./routes/itemgroups');
 var regions = require('./routes/regions');
+var market_route = require('./routes/market/market_route');
+var regions_json = require('./routes/market/regions_json');
+var groups_json = require('./routes/market/groups_json');
 
 var eve_sse_login = require('./routes/eve_sse_login');
 
@@ -36,13 +38,20 @@ app.route('/user').get(user);
 app.route('/eve/login').get(function(req, res){
   res.redirect('https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://localhost:3000/skunkonline/login/sse&client_id=d43424f9f0574f178654d9e4ab008576&scope=publicData&state=uniquestate123')
 });
-app.route('/skunkonline/login/sse').get(eve_sse_login)
+app.route('/logout').get(function(req, res){
+  delete req.session.name;
+  delete req.session.access_token;
+  res.redirect('/');
+})
+app.route('/skunkonline/login/sse').get(eve_sse_login);
 
 // app.route('/users').get(users);
 app.use('/', routes);
-app.use('/users', users);
 app.use('/itemGroups', itemgroups);
 app.use('/regions', regions);
+app.use('/market', market_route);
+app.use('/data/regions', regions_json);
+app.use('/data/groups', groups_json);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

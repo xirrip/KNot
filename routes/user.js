@@ -7,11 +7,10 @@ router.get('/user', function(req, res, next) {
   var sess = req.session;
 
   if(sess.access_token){
-    res.send('We do have an authenticated user with access token here! Hip hip... hooray!');
+    res.render('user', { user : sess.name });
   }
   else{
-    res.send('Sorry, we do not know you');
-    // res.redirect(login);
+    res.redirect('/eve/login/');
   }
 });
 

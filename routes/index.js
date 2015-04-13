@@ -2,33 +2,30 @@ var express = require('express');
 var router = express.Router();
 
 var http = require('http');
+var async = require('async');
 
-function getWeather(city, res){
+function getWeather(city, callback){
   var options = {
     host: 'api.openweathermap.org',
     path: '/data/2.5/weather?q=' + city
   };
   http.request(options,
       function(weatherResponse){
-        parseWeather(weatherResponse, res);
+        parseWeather(weatherResponse, callback);
       }).end();
 }
 
-function parseWeather(weatherResponse, res) {
+function parseWeather(weatherResponse, callback) {
   var weatherData = '';
   weatherResponse.on('data', function (chunk) {
     weatherData += chunk;
   });
   weatherResponse.on('end', function () {
-    sendResponse(weatherData, res);
+    var weatherObj = JSON.parse(weatherData);
+    callback(weatherObj);
   });
 }
 
-function sendResponse(weatherData, res){
-  console.log(weatherData);
-  var weatherObj = JSON.parse(weatherData);
-  res.render('index', { title: 'Express', location: weatherObj["name"], weather: weatherObj['weather'][0]['description'] });
-}
 var MongoClient = require('mongodb').MongoClient;
 
 var myDb = {
@@ -79,8 +76,27 @@ function addObject(collection, object){
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
+  var output = {};
+  async.parallel(
+      [
+          function getWeatherReport(onTaskDone){
+            getWeather(encodeURIComponent("Hausen am Albis, CH"), function onWeatherReportReceived(weather){
+              output.weather = weather;
+              onTaskDone();
+            });
+          }
+      ],
+      function onDone(){
+        res.render('index',
+            { title: 'Express',
+              user: req.session['name'],
+              location: output.weather["name"],
+              weather: output.weather['weather'][0]['description']
+            });
+      }
+  )
+
   // myDb.doIt();
-  getWeather(encodeURIComponent("Hausen am Albis, CH"), res);
 });
 
 module.exports = router;

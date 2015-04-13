@@ -1,8 +1,23 @@
 extends layout
 
 block content
-  a(href='eve/login')
-    img(src="images/EVELogin.png")
   h1= title
-  p Welcome to #{title}
-  p Weather at #{location} is: #{weather}
+
+  if user
+    p Welcome #{user} to #{title}
+
+    div
+      a(href="/regions/") Regions
+    div
+      a(href="/itemgroups/") Item Groups
+    div
+      a(href="/logout/") Logout
+    div
+      a(href="/market/") Market
+
+  else
+    p Welcome to #{title}
+    p Weather at #{location} is: #{weather}
+
+    a(href='eve/login')
+      img(src="images/EVELogin.png")

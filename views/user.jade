@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1= title
+
+
+  div
+    if user
+      h2 Hello #{user}
+      div You are authenticated.
+  hl
+  div
+    div
+      a(href='/') Home
+    div
+      a(href='/regions/') Regions
+    div
+      a(href='/market/') Market

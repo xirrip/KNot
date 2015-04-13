@@ -15,10 +15,80 @@
     // http://public-crest.eveonline.com/regions/10000042/
 
 var https = require('https');
-var http = require('http');
 var url = require('url');
 
 var session = require('express-session');
+
+var CREST_HOST = 'crest-tq.eveonline.com';
+
+exports.getCrestElement = function getCrestElement(elements, accessToken, callback){
+    // get root crest dir
+    console.log('getting crest element: ' + elements);
+
+    var options = {
+        host : CREST_HOST,
+        path : '/',
+        headers: {
+            'Authorization' : 'Bearer ' + accessToken
+        }
+    };
+    https.request(options, function getCrestResponse(crestResponse){
+        console.log("CREST response received for root.");
+        var crestData = '';
+        crestResponse.on('data', function (chunk) {
+            crestData += chunk;
+        });
+        crestResponse.on('end', function () {
+            var parsedData = JSON.parse(crestData);
+            getCrestElementFromCrestDir(elements, parsedData, accessToken, callback);
+        });
+    }).end();
+}
+
+function getCrestElementFromCrestDir(elements, crestDir, accessToken, callback){
+    var e = elements.shift();
+    console.log('getting crest response for: ' + e);
+    if(crestDir[e]){
+        console.log(e + ' is available.');
+        var urlString = crestDir[e]['href'];
+        var parsedUrl = url.parse(urlString);
+
+        if(e === 'regions' && elements.length > 0){
+            parsedUrl.path += elements.shift() + '/';
+        }
+        console.log('CREST element path = ' + parsedUrl.path);
+
+        var options = {
+            host : parsedUrl.hostname,
+            path : parsedUrl.path,
+            headers: {
+                'Authorization' : 'Bearer ' + accessToken
+            }
+        };
+        https.request(options, function getCrestResponse(crestResponse){
+            console.log("CREST response received for: " + e);
+            // console.log("received: " + crestResponse);
+            var crestData = '';
+            crestResponse.on('data', function (chunk) {
+                crestData += chunk;
+            });
+            crestResponse.on('end', function () {
+                console.log('Data = ' + crestData);
+                var parsedData = JSON.parse(crestData);
+                if(elements.length > 0){
+                    getCrestElementFromCrestDir(elements, parsedData, callback);
+                }
+                else{
+                    callback(parsedData);
+                }
+            });
+        }).end();
+    }
+    else{
+        console.log('Crest dir does not contain ' + e);
+        console.log(crestDir);
+    }
+}
 
 exports.getRegions = function getRegions(sess, callback){
     console.log("Connecting to CREST...");
@@ -153,30 +223,3 @@ exports.getBuyOrders = function getBuyOrders(sess, region, type, callback){
     }).end();
 }
 
-exports.getCharacterFromToken = function getCharacterFromToken(sess, callback){
-    console.log("Connecting to CREST token decode");
-    var options = {
-        host : 'login.eveonline.com',
-        path : '/oauth/verify/',
-        headers: {
-            'Authorization' : 'Bearer ' + sess.access_token
-        }
-    };
-    if(sess.access_token){
-        console.log("authenticated crest with " + sess.access_token);
-    }
-    https.request(options, function parseOrders(crestResponse){
-        console.log("Login verification:");
-        var crestData = '';
-        crestResponse.on('data', function (chunk) {
-            crestData += chunk;
-        });
-        crestResponse.on('end', function () {
-            var parsedData = JSON.parse(crestData);
-            if(!parsedData['exceptionType']){
-                // console.log(crestData);
-                callback(parsedData);
-            }
-        });
-    }).end();
-}

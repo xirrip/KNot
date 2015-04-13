@@ -20,8 +20,12 @@ router.get('/', function(req, res, next) {
   }
 
   function onReceiveRegion(region){
-    console.log(region);
-    crest.getBuyOrders(req.session, region, 'Tritanium', onReceiveBuyOrders);
+    crest.getCrestElement(['regions', '10000039'], req.session.access_token, function onReceiveEsoteria(esoteria){
+      console.log("Yupeee, received esoteria: " + esoteria);
+    });
+
+    // console.log(region);
+    // crest.getBuyOrders(req.session, region, 'Tritanium', onReceiveBuyOrders);
   }
 
   var crest = require('../modules/crest/crest.js');

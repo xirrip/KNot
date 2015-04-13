@@ -1,0 +1,52 @@
+
+extends ../layout
+block content
+
+   div(ng-app='app')
+      div(ng-controller='MarketController')
+
+         h1= title
+
+         a(href="/") Home
+
+         p {{selectedMarket}}
+         p {{selectedItemGroup}}
+         p {{selectedItem}}
+
+         div(ng-controller="RegionsController")
+            p Selected regions is: {{selectedRegion.name}}
+
+            select(ng-model="selectedRegion" ng-options="region.name for region in regions")
+
+            p Selected group is: {{selectedGroup.name}}
+            select(ng-model="selectedGroup" ng-options="grp.name for grp in groups")
+
+
+      div(ng-controller='ItemGroupController as groupController')
+
+         div(class="navbar navbar-inverse navbar-fixed-top")
+            div(class="container")
+               div(class="navbar-header")
+                  a(class="navbar-brand",href="#/") Project name
+
+         h1 Infinite Tree: number of nodes loaded: {{groupController.total}}
+
+         ul(dx-start-with="groupController.root", class="list-unstyled")
+            li(ng-repeat="node in $dxPrior.nodes")
+               i(class="glyphicon btn btn-primary", ng-class="node.expanded ? 'glyphicon-chevron-down':'glyphicon-chevron-right'", ng-click="groupController.toggle(node)")
+               span {{ node.name }}
+
+               ul(ng-if="node.expanded" dx-connect="node")
+
+         div(demo-tree root="groupController.root")
+
+
+   script(src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+   script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js")
+   // tree view scripts
+   script(src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/js/bootstrap.min.js")
+   script(src="https://rawgithub.com/dotJEM/angular-routing/master/build/angular-routing.js")
+   script(src="https://rawgithub.com/dotJEM/angular-tree-bower/master/dotjem-angular-tree.js")
+
+   script(src="/javascripts/client.js")
+   script(src="/javascripts/market/market.js")
